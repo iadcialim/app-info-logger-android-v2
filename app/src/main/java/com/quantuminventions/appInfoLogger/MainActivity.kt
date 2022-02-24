@@ -2,12 +2,10 @@ package com.quantuminventions.appInfoLogger
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.ui.AppBarConfiguration
 import com.quantuminventions.appInfoLogger.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -18,5 +16,10 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
 
+        // FirebaseApp.initializeApp(this)
+
+        binding.fab.setOnClickListener {
+            AppInfoLogger(this, "iad").saveAppInfo()
+        }
     }
 }

@@ -16,10 +16,28 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+    signingConfigs {
+        Properties properties = new Properties()
+        if (rootProject.file("local.properties").exists()) {
+            properties.load(rootProject.file("local.properties").newDataInputStream())
+        }
 
+        defaultConfig {
+            storeFile file("keystore/appInfoLogger.jks")
+            storePassword properties.getProperty("keyStorePassword", "")
+            keyAlias properties.getProperty("keyAlias", "")
+            keyPassword properties.getProperty("keyPassword", "")
+        }
+    }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.defaultConfig
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
         release {
-            minifyEnabled false
+            signingConfig signingConfigs.defaultConfig
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }

@@ -21,7 +21,9 @@ class AppInfoLogger(
         const val DEFAULT_PREF_NAME = "appInfo"
         const val FIREBASE_FUNCTION = "appInfoLogger"
         const val DATE_UPDATED = "dateUpdated"
-        const val SAVE_TIME_INTERVAL = 2419200000 // 4 weeks
+        const val SAVE_TIME_INTERVAL = 2419200000 // 4 weeks = 2419200000, 1 min = 60000
+        const val MAX_CALLS_PER_INTERVAL = 2 // max calls per SAVE_TIME_INTERVAL
+        const val CALL_COUNTER = "callCtr"
     }
 
     init {
@@ -32,15 +34,28 @@ class AppInfoLogger(
     fun saveAppInfo(fcmToken: String? = null, userId: String? = null) {
         // only send the app info every SAVE_TIME_INTERVAL so the it won't abuse the Firebase function
         val lastUpdatedDate = sharedPreferencesManager?.getLong(DATE_UPDATED, 0) ?: 0
+
         val dateNow = Date().time
         val difference = dateNow - lastUpdatedDate
-        Log.d("[saveAppInfo]", "difference=$difference, SAVE_TIME_INTERVAL=$SAVE_TIME_INTERVAL")
+        Log.d(
+            "[saveAppInfo]",
+            "difference=$difference, SAVE_TIME_INTERVAL=$SAVE_TIME_INTERVAL"
+        )
 
-        if (lastUpdatedDate == 0L || difference > SAVE_TIME_INTERVAL) {
-            getDeviceDetails(context) {
-                saveAppInfo(it, fcmToken, userId)
+        if (difference > SAVE_TIME_INTERVAL) {
+            val callCtr = sharedPreferencesManager?.getInt(CALL_COUNTER, 0) ?: 0
+            Log.d(
+                "[saveAppInfo]",
+                "callCtr=$callCtr, MAX_CALLS_PER_INTERVAL=$MAX_CALLS_PER_INTERVAL"
+            )
+
+            if (callCtr < MAX_CALLS_PER_INTERVAL) {
+                getDeviceDetails(context) {
+                    saveAppInfo(it, fcmToken, userId)
+                }
             }
         } else {
+            sharedPreferencesManager?.set(CALL_COUNTER, 0)
             Log.d("[saveAppInfo]", "It's not time to save yet")
         }
     }
@@ -81,7 +96,7 @@ class AppInfoLogger(
                 "deviceName" to deviceInfo.deviceName,
                 "fcmToken" to fcmToken,
                 "sdkVersion" to Build.VERSION.SDK_INT,
-                "osVersion" to Build.VERSION.RELEASE_OR_CODENAME,
+                "osVersion" to Build.VERSION.RELEASE,
                 "userId" to userId,
                 "dateUpdatedLong" to date.time,
                 "dateUpdatedStr" to date.toStr()
@@ -111,7 +126,17 @@ class AppInfoLogger(
                         }
                     } else {
                         Log.d("[saveAppInfo]", "SUCCESS task=${task.result}")
-                        sharedPreferencesManager?.set(DATE_UPDATED, date.time)
+
+                        val callCtr = sharedPreferencesManager?.getInt(CALL_COUNTER, 0) ?: 0
+                        val newCtr = callCtr + 1
+                        sharedPreferencesManager?.set(CALL_COUNTER, newCtr)
+                        Log.d(
+                            "[saveAppInfo]",
+                            "newCtr=$newCtr, MAX_CALLS_PER_INTERVAL=$MAX_CALLS_PER_INTERVAL"
+                        )
+                        if (newCtr >= MAX_CALLS_PER_INTERVAL) {
+                            sharedPreferencesManager?.set(DATE_UPDATED, date.time)
+                        }
                     }
                 }
         } catch (e: Exception) {

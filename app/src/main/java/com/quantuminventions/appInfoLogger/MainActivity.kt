@@ -19,7 +19,10 @@ class MainActivity : AppCompatActivity() {
         // FirebaseApp.initializeApp(this)
 
         binding.fab.setOnClickListener {
-            AppInfoLogger(this, "iad").saveAppInfo()
+            AppInfoLogger(
+                this,
+                AppInfoLogger.Config("app-info-logger-sample", "prod")
+            ).saveAppInfo()
         }
     }
 }

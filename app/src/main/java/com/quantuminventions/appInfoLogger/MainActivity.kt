@@ -20,9 +20,8 @@ class MainActivity : AppCompatActivity() {
 
         binding.fab.setOnClickListener {
             AppInfoLogger(
-                this,
-                AppInfoLogger.Config("app-info-logger-sample", "dev")
-            ).saveAppInfo()
+                this
+            ).saveAppInfo("dev", "1234")
         }
     }
 }

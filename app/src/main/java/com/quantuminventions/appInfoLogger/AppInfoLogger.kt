@@ -52,7 +52,7 @@ class AppInfoLogger(
         val difference = dateNow - lastUpdatedDate
         Log.d(
             "[saveAppInfo]",
-            "difference=$difference, SAVE_TIME_INTERVAL=$SAVE_TIME_INTERVAL"
+            "dateNow=$dateNow, lastUpdatedDate=$lastUpdatedDate, difference=$difference, SAVE_TIME_INTERVAL=$SAVE_TIME_INTERVAL"
         )
 
         if (difference > SAVE_TIME_INTERVAL) {

@@ -54,16 +54,28 @@ class AppInfoLogger private constructor(builder: Builder) {
         internal var maxCallsPerInterval = MAX_CALLS_PER_INTERVAL
         internal var saveTimeInterval = SAVE_TIME_INTERVAL
 
+        /**
+         * Sets time interval between saving app info
+         * @param saveTimeInterval the time interval between saving app info
+         */
         fun setTimeIntervalToSave(saveTimeInterval: Long): Builder {
             this.saveTimeInterval = saveTimeInterval
             return this
         }
 
+        /**
+         * Sets the call counter
+         * @param firebaseFtnCallCounter
+         */
         fun setFirebaseFtnCallCounter(firebaseFtnCallCounter: Int): Builder {
             this.maxCallsPerInterval = firebaseFtnCallCounter
             return this
         }
 
+        /**
+         * This provides an instance of [AppInfoLogger] with param as [Builder] object
+         * @return instance of [AppInfoLogger]
+         */
         fun build(): AppInfoLogger {
             return AppInfoLogger(this)
         }

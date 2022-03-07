@@ -1,4 +1,4 @@
-package com.quantuminventions.appInfoLogger
+package com.quantuminventions.appInfoLogger.library
 
 import android.content.SharedPreferences
 import android.util.Log

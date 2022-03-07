@@ -1,8 +1,9 @@
-package com.quantuminventions.appInfoLogger
+package com.quantuminventions.appInfoLogger.library
 
 import android.content.Context
 import android.os.Build
 import android.util.Log
+import androidx.annotation.NonNull
 import com.google.firebase.functions.FirebaseFunctionsException
 import com.google.firebase.functions.ktx.functions
 import com.google.firebase.ktx.Firebase
@@ -12,16 +13,25 @@ import java.util.*
 /**
  * Class that gets the device model, app id, and other info and send it Firebase Functions
  * and to be saved in Firebase Firestore
- * This saves and retrieves data in the SharedPreferreces file
- * @param context
- * @param sharedPreferencesName the name of the [SharedPreferences] to use
- *        If null, it will create a new SharedPreference file of its own
+ * This saves and retrieves data in the SharedPreferences file
  */
-class AppInfoLogger(
-    private val context: Context,
-    sharedPreferencesName: String? = null
-) {
+class AppInfoLogger private constructor(builder: Builder) {
+
+    private var context: Context = builder.context
+    private var maxCallsPerInterval: Int = MAX_CALLS_PER_INTERVAL
+    private var saveTimeInterval: Long = SAVE_TIME_INTERVAL
+    private var sharedPreferencesName: String? = null
+
+    // the name of the [SharedPreferences] to use.
+    // If null, it will create a new SharedPreference file of its own
     private var sharedPreferencesManager: SharedPreferencesManager? = null
+
+    init {
+        this.maxCallsPerInterval = builder.maxCallsPerInterval
+        this.saveTimeInterval = builder.saveTimeInterval
+        sharedPreferencesManager =
+            SharedPreferencesManager.Impl(context, sharedPreferencesName ?: DEFAULT_PREF_NAME)
+    }
 
     companion object {
         const val APP_ID = "appId"
@@ -33,9 +43,30 @@ class AppInfoLogger(
         const val CALL_COUNTER = "callCtr"
     }
 
-    init {
-        sharedPreferencesManager =
-            SharedPreferencesManager.Impl(context, sharedPreferencesName ?: DEFAULT_PREF_NAME)
+    /**
+     * Builder class to provide immutability to the parent class [AppInfoLogger]
+     * @param context The context
+     */
+    // https://howtodoinjava.com/design-patterns/creational/builder-pattern-in-java/
+
+    class Builder(@NonNull val context: Context) {
+
+        internal var maxCallsPerInterval = MAX_CALLS_PER_INTERVAL
+        internal var saveTimeInterval = SAVE_TIME_INTERVAL
+
+        fun setTimeIntervalToSave(saveTimeInterval: Long): Builder {
+            this.saveTimeInterval = saveTimeInterval
+            return this
+        }
+
+        fun setFirebaseFtnCallCounter(firebaseFtnCallCounter: Int): Builder {
+            this.maxCallsPerInterval = firebaseFtnCallCounter
+            return this
+        }
+
+        fun build(): AppInfoLogger {
+            return AppInfoLogger(this)
+        }
     }
 
     /**
@@ -55,14 +86,14 @@ class AppInfoLogger(
             "dateNow=$dateNow, lastUpdatedDate=$lastUpdatedDate, difference=$difference, SAVE_TIME_INTERVAL=$SAVE_TIME_INTERVAL"
         )
 
-        if (difference > SAVE_TIME_INTERVAL) {
+        if (difference > saveTimeInterval) {
             val callCtr = sharedPreferencesManager?.getInt(CALL_COUNTER, 0) ?: 0
             Log.d(
                 "[saveAppInfo]",
-                "callCtr=$callCtr, MAX_CALLS_PER_INTERVAL=$MAX_CALLS_PER_INTERVAL"
+                "callCtr=$callCtr, maxCallsPerInterval=$MAX_CALLS_PER_INTERVAL"
             )
 
-            if (callCtr < MAX_CALLS_PER_INTERVAL) {
+            if (callCtr < maxCallsPerInterval) {
                 getDeviceDetails(context) {
                     saveToFirebase(environment, it, fcmToken, userId)
                 }
@@ -157,9 +188,9 @@ class AppInfoLogger(
                         sharedPreferencesManager?.set(CALL_COUNTER, newCtr)
                         Log.d(
                             "[saveAppInfo]",
-                            "newCtr=$newCtr, MAX_CALLS_PER_INTERVAL=$MAX_CALLS_PER_INTERVAL"
+                            "newCtr=$newCtr, maxCallsPerInterval=$MAX_CALLS_PER_INTERVAL"
                         )
-                        if (newCtr >= MAX_CALLS_PER_INTERVAL) {
+                        if (newCtr >= maxCallsPerInterval) {
                             sharedPreferencesManager?.set(DATE_UPDATED, date.time)
                         }
                     }

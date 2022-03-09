@@ -15,16 +15,8 @@ buildscript {
     }
 }
 
-allprojects {
-    apply plugin: "com.jfrog.artifactory"
-    apply plugin: 'maven-publish'
-    repositories {
-        google()
-        jcenter()
-        mavenCentral()
-    }
-}
-
+apply plugin: "com.jfrog.artifactory"
+apply plugin: 'maven-publish'
 task clean(type: Delete) {
     delete rootProject.buildDir
 }

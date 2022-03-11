@@ -18,7 +18,7 @@ import java.util.*
 class AppInfoLogger private constructor(builder: Builder) {
 
     private var context: Context = builder.context
-    private var maxCallsPerInterval: Int = MAX_CALLS_PER_INTERVAL
+    private var maxSavesPerInterval: Int = MAX_SAVES_PER_INTERVAL
     private var saveTimeInterval: Long = SAVE_TIME_INTERVAL
     private var sharedPreferencesName: String? = null
 
@@ -27,7 +27,7 @@ class AppInfoLogger private constructor(builder: Builder) {
     private var sharedPreferencesManager: SharedPreferencesManager? = null
 
     init {
-        this.maxCallsPerInterval = builder.maxCallsPerInterval
+        this.maxSavesPerInterval = builder.maxSavesPerInterval
         this.saveTimeInterval = builder.saveTimeInterval
         sharedPreferencesManager =
             SharedPreferencesManager.Impl(context, sharedPreferencesName ?: DEFAULT_PREF_NAME)
@@ -38,24 +38,33 @@ class AppInfoLogger private constructor(builder: Builder) {
         const val DEFAULT_PREF_NAME = "appInfo"
         const val FIREBASE_FUNCTION = "appInfoLogger"
         const val DATE_UPDATED = "dateUpdated"
-        const val SAVE_TIME_INTERVAL = 2419200000 // 4 weeks = 2419200000, 1 min = 60000
-        const val MAX_CALLS_PER_INTERVAL = 2 // max calls per SAVE_TIME_INTERVAL
         const val CALL_COUNTER = "callCtr"
+
+        // default values
+        const val SAVE_TIME_INTERVAL = 2419200000 // 4 weeks = 2419200000, 1 min = 60000
+        const val MAX_SAVES_PER_INTERVAL = 2
+
     }
 
     /**
      * Builder class to provide immutability to the parent class [AppInfoLogger]
+     * Followed https://howtodoinjava.com/design-patterns/creational/builder-pattern-in-java/
      * @param context The context
      */
-    // https://howtodoinjava.com/design-patterns/creational/builder-pattern-in-java/
-
     class Builder(@NonNull val context: Context) {
 
-        internal var maxCallsPerInterval = MAX_CALLS_PER_INTERVAL
-        internal var saveTimeInterval = SAVE_TIME_INTERVAL
+        /**
+         * Calling the Firebase function [saveToFirebase] is restricted to a number of calls [maxSavesPerInterval]
+         * in a period of time [saveTimeInterval].
+         * Example: If []maxCallsPerInterval] is 2419200000 (4 weeks) and [saveTimeInterval] is 2, it means it can
+         * only call twice in a period of  4 weeks
+         * This way the Firebase function is not abused and won't incur bill as long as its below some threshold
+         */
+        internal var maxSavesPerInterval: Int = MAX_SAVES_PER_INTERVAL
+        internal var saveTimeInterval: Long = SAVE_TIME_INTERVAL
 
         /**
-         * Sets time interval between saving app info
+         * Sets time interval when the library can save in Firebase DB
          * @param saveTimeInterval the time interval between saving app info
          */
         fun setTimeIntervalToSave(saveTimeInterval: Long): Builder {
@@ -64,11 +73,11 @@ class AppInfoLogger private constructor(builder: Builder) {
         }
 
         /**
-         * Sets the call counter
-         * @param firebaseFtnCallCounter
+         * Sets the max number of saves per [saveTimeInterval]
+         * @param maxSaves
          */
-        fun setFirebaseFtnCallCounter(firebaseFtnCallCounter: Int): Builder {
-            this.maxCallsPerInterval = firebaseFtnCallCounter
+        fun setMaxSavesPerInterval(maxSaves: Int): Builder {
+            this.maxSavesPerInterval = maxSaves
             return this
         }
 
@@ -95,17 +104,17 @@ class AppInfoLogger private constructor(builder: Builder) {
         val difference = dateNow - lastUpdatedDate
         Log.d(
             "[saveAppInfo]",
-            "dateNow=$dateNow, lastUpdatedDate=$lastUpdatedDate, difference=$difference, SAVE_TIME_INTERVAL=$SAVE_TIME_INTERVAL"
+            "dateNow=$dateNow, lastUpdatedDate=$lastUpdatedDate, difference=$difference, saveTimeInterval=$saveTimeInterval"
         )
 
         if (difference > saveTimeInterval) {
             val callCtr = sharedPreferencesManager?.getInt(CALL_COUNTER, 0) ?: 0
             Log.d(
                 "[saveAppInfo]",
-                "callCtr=$callCtr, maxCallsPerInterval=$MAX_CALLS_PER_INTERVAL"
+                "callCtr=$callCtr, maxCallsPerInterval=$maxSavesPerInterval"
             )
 
-            if (callCtr < maxCallsPerInterval) {
+            if (callCtr < maxSavesPerInterval) {
                 getDeviceDetails(context) {
                     saveToFirebase(environment, it, fcmToken, userId)
                 }
@@ -200,9 +209,9 @@ class AppInfoLogger private constructor(builder: Builder) {
                         sharedPreferencesManager?.set(CALL_COUNTER, newCtr)
                         Log.d(
                             "[saveAppInfo]",
-                            "newCtr=$newCtr, maxCallsPerInterval=$MAX_CALLS_PER_INTERVAL"
+                            "newCtr=$newCtr, maxSavesPerInterval=$maxSavesPerInterval"
                         )
-                        if (newCtr >= maxCallsPerInterval) {
+                        if (newCtr >= maxSavesPerInterval) {
                             sharedPreferencesManager?.set(DATE_UPDATED, date.time)
                         }
                     }

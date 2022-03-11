@@ -21,8 +21,8 @@ class MainActivity : AppCompatActivity() {
 
         binding.fab.setOnClickListener {
             AppInfoLogger.Builder(this)
-                // .setFirebaseFtnCallCounter()
-                // .setTimeIntervalToSave()
+                .setMaxSavesPerInterval(3)
+                .setTimeIntervalToSave(60000)
                 .build()
                 .saveAppInfo("dev", "1234")
         }

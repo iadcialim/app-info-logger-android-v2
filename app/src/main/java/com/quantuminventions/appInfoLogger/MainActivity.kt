@@ -3,6 +3,7 @@ package com.quantuminventions.appInfoLogger
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.quantuminventions.appInfoLogger.databinding.ActivityMainBinding
+import com.quantuminventions.appInfoLogger.library.AppInfoLogger
 
 class MainActivity : AppCompatActivity() {
 
@@ -19,9 +20,11 @@ class MainActivity : AppCompatActivity() {
         // FirebaseApp.initializeApp(this)
 
         binding.fab.setOnClickListener {
-            AppInfoLogger(
-                this
-            ).saveAppInfo("dev", "1234")
+            AppInfoLogger.Builder(this)
+                .setMaxSavesPerInterval(3)
+                .setTimeIntervalToSave(60000)
+                .build()
+                .saveAppInfo("dev", "1234")
         }
     }
 }

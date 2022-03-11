@@ -8,3 +8,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "app-info-logger-android"
 include ':app'
+include ':library'

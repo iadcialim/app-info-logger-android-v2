@@ -1,4 +1,4 @@
-package com.quantuminventions.appInfoLogger
+package com.quantuminventions.app
 
 import org.junit.Test
 

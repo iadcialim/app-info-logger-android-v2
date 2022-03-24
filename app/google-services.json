@@ -1,15 +1,16 @@
 {
   "project_info": {
     "project_number": "361751821286",
+    "firebase_url": "https://app-info-logger-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "app-info-logger",
     "storage_bucket": "app-info-logger.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:361751821286:android:db9dc5ff689a3d7a443427",
+        "mobilesdk_app_id": "1:361751821286:android:f7439a719835ae0a443427",
         "android_client_info": {
-          "package_name": "com.quantuminventions.appInfoLogger"
+          "package_name": "com.quantuminventions.app"
         }
       },
       "oauth_client": [
@@ -29,6 +30,13 @@
             {
               "client_id": "361751821286-92aebcmpf8njddqd0b38grnq5n16c56b.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "361751821286-rvak8fqqe6mlnav250580uuf94d68pal.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.quantuminventions.AppInfoLogger"
+              }
             }
           ]
         }

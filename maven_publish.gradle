@@ -32,17 +32,17 @@ artifactory {
     def localProperties = new Properties()
     localProperties.load(new FileInputStream(localPropertiesFile))
 
-    def appInfoLoggerSdkUrl = localProperties['appInfoLoggerSdkUrl']
-    def appInfoLoggerSdkRepoKey = localProperties['appInfoLoggerSdkRepoKey']
-    def appInfoLoggerSdkUser = localProperties['appInfoLoggerSdkUser']
-    def appInfoLoggerSdkPassword = localProperties['appInfoLoggerSdkPassword']
+    def jFrogArtifactoryUrl = localProperties['jFrogArtifactoryUrl']
+    def jFrogArtifactoryUser = localProperties['jFrogArtifactoryUser']
+    def jFrogArtifactoryPassword = localProperties['jFrogArtifactoryPassword']
+    def appInfoLoggerRepoKey = localProperties['appInfoLoggerRepoKey']
 
-    contextUrl = appInfoLoggerSdkUrl
+    contextUrl = jFrogArtifactoryUrl
     publish {
         repository {
-            repoKey = appInfoLoggerSdkRepoKey
-            username = appInfoLoggerSdkUser
-            password = appInfoLoggerSdkPassword
+            repoKey = appInfoLoggerRepoKey
+            username = jFrogArtifactoryUser
+            password = jFrogArtifactoryPassword
         }
         defaults {
             publications('aar')

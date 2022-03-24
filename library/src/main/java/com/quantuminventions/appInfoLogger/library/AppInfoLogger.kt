@@ -39,11 +39,12 @@ class AppInfoLogger private constructor(builder: Builder) {
         const val FIREBASE_FUNCTION = "appInfoLogger"
         const val DATE_UPDATED = "dateUpdated"
         const val CALL_COUNTER = "callCtr"
+        const val APP_VERSION = "appVersion"
+        const val OS_VERSION = "osVersion"
 
         // default values
         const val SAVE_TIME_INTERVAL = 2419200000 // 4 weeks = 2419200000, 1 min = 60000
         const val MAX_SAVES_PER_INTERVAL = 2
-
     }
 
     /**
@@ -93,21 +94,29 @@ class AppInfoLogger private constructor(builder: Builder) {
     /**
      * Saves the app fcmToken and userId in the app
      * @param environment this will determine on which environment (part of collection name) in Firestore
+     * @param appVersion The version name of the app
      * @param fcmToken Firebase Cloud Messaging token used for push notifications
      * @param userId Important to know which user has this app information
      */
-    fun saveAppInfo(environment: String, userId: String, fcmToken: String? = null) {
+    fun saveAppInfo(
+        environment: String,
+        appVersion: String,
+        userId: String,
+        fcmToken: String? = null
+    ) {
         // only send the app info every SAVE_TIME_INTERVAL so the it won't abuse the Firebase function
         val lastUpdatedDate = sharedPreferencesManager?.getLong(DATE_UPDATED, 0) ?: 0
 
         val dateNow = Date().time
         val difference = dateNow - lastUpdatedDate
+        val gotChange = hasItChanged(appVersion)
         Log.d(
             "[saveAppInfo]",
-            "dateNow=$dateNow, lastUpdatedDate=$lastUpdatedDate, difference=$difference, saveTimeInterval=$saveTimeInterval"
+            "dateNow=$dateNow, lastUpdatedDate=$lastUpdatedDate, difference=$difference, " +
+                    "saveTimeInterval=$saveTimeInterval, gotChange=$gotChange"
         )
 
-        if (difference > saveTimeInterval) {
+        if (difference > saveTimeInterval || gotChange) {
             val callCtr = sharedPreferencesManager?.getInt(CALL_COUNTER, 0) ?: 0
             Log.d(
                 "[saveAppInfo]",
@@ -116,7 +125,7 @@ class AppInfoLogger private constructor(builder: Builder) {
 
             if (callCtr < maxSavesPerInterval) {
                 getDeviceDetails(context) {
-                    saveToFirebase(environment, it, fcmToken, userId)
+                    saveToFirebase(environment, appVersion, it, fcmToken, userId)
                 }
             } else {
                 sharedPreferencesManager?.set(CALL_COUNTER, 0)
@@ -152,11 +161,13 @@ class AppInfoLogger private constructor(builder: Builder) {
     /**
      * Actual call of the Firebase Function and sending of the data
      * @param environment this will determine on which environment (part of collection name) in Firestore
+     * @param appVersion The version name of the app
      * @param fcmToken Firebase Cloud Messaging token used for push notifications
      * @param userId Important to know which user has this app information
      */
     private fun saveToFirebase(
         environment: String,
+        appVersion: String,
         deviceInfo: DeviceInfo,
         fcmToken: String? = null,
         userId: String? = null
@@ -167,17 +178,22 @@ class AppInfoLogger private constructor(builder: Builder) {
                 "environment" to environment,
                 "platform" to "android",
                 APP_ID to getAppId(),
+                APP_VERSION to appVersion,
                 "userId" to userId,
                 "deviceManufacturer" to deviceInfo.deviceManufacturer,
                 "deviceModel" to deviceInfo.deviceModel,
                 "deviceName" to deviceInfo.deviceName,
                 "fcmToken" to fcmToken,
                 "sdkVersion" to Build.VERSION.SDK_INT,
-                "osVersion" to Build.VERSION.RELEASE,
+                OS_VERSION to Build.VERSION.RELEASE,
                 "userId" to userId,
                 "dateUpdatedLong" to date.time,
                 "dateUpdatedStr" to date.toStr()
             )
+
+            // save them
+            sharedPreferencesManager?.set(APP_VERSION, appVersion)
+            sharedPreferencesManager?.set(OS_VERSION, Build.VERSION.RELEASE)
 
             Firebase.functions?.getHttpsCallable(FIREBASE_FUNCTION)
                 ?.call(data)
@@ -233,6 +249,16 @@ class AppInfoLogger private constructor(builder: Builder) {
             sharedPreferencesManager?.set(APP_ID, random)
             random
         }
+    }
+
+    /**
+     * Check if there are changes in the app version or OS version
+     * @param appVersion The version name of the app
+     *
+     */
+    private fun hasItChanged(appVersion: String): Boolean {
+        return sharedPreferencesManager?.getString(APP_VERSION, "") != appVersion ||
+                sharedPreferencesManager?.getString(OS_VERSION, "") != Build.VERSION.RELEASE
     }
 
     data class DeviceInfo(

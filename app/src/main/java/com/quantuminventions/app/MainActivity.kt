@@ -1,9 +1,9 @@
-package com.quantuminventions.appInfoLogger
+package com.quantuminventions.app
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.quantuminventions.appInfoLogger.databinding.ActivityMainBinding
-import com.quantuminventions.appInfoLogger.library.AppInfoLogger
+import com.quantuminventions.app.databinding.ActivityMainBinding
+import com.quantuminventions.appinfo.logger.AppInfoLogger
 
 class MainActivity : AppCompatActivity() {
 

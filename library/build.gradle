@@ -37,14 +37,15 @@ dependencies {
 
     implementation 'androidx.core:core-ktx:1.6.0'
     implementation 'androidx.appcompat:appcompat:1.3.1'
-    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'com.google.android.material:material:1.4.0'
 
     // Import the BoM for the Firebase platform
-    implementation platform('com.google.firebase:firebase-bom:29.0.0')
+    // implementation platform('com.google.firebase:firebase-bom:29.0.0')
 
     // Declare the dependency for the Cloud Functions library
     // When using the BoM, you don't specify versions in Firebase library dependencies
-    implementation 'com.google.firebase:firebase-functions-ktx'
+    // UPDATE: Don't use BOM yet as we need to find out how to generate correct pom.xml file with it
+    implementation 'com.google.firebase:firebase-functions-ktx:20.0.2'
 
     // https://github.com/jaredrummler/AndroidDeviceNames
     implementation 'com.jaredrummler:android-device-names:2.1.0'

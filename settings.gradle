@@ -3,9 +3,23 @@ import org.gradle.api.initialization.resolve.RepositoriesMode
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
+        def localPropertiesFile = file("local.properties")
+        def localProperties = new Properties()
+        if (localPropertiesFile.exists()) {
+            localProperties.load(new FileInputStream(localPropertiesFile))
+        }
+
         google()
         mavenCentral()
         jcenter() // Warning: this repository is going to shut down soon
+
+        maven {
+            credentials {
+                username localProperties['jFrogArtifactoryUser']
+                password localProperties['jFrogArtifactoryPassword']
+            }
+            url 'https://quantuminventions.jfrog.io/artifactory/android-libs-release-local/'
+        }
     }
 }
 rootProject.name = "app-info-logger-android"

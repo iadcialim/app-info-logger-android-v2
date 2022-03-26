@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
                 .setMaxSavesPerInterval(3)
                 .setTimeIntervalToSave(60000)
                 .build()
-                .saveAppInfo("dev", "1234")
+                .saveAppInfo("dev", BuildConfig.VERSION_NAME, "1234")
         }
     }
 }

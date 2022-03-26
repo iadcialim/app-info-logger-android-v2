@@ -32,15 +32,13 @@ artifactory {
     def localProperties = new Properties()
     localProperties.load(new FileInputStream(localPropertiesFile))
 
-    def jFrogArtifactoryUrl = localProperties['jFrogArtifactoryUrl']
     def jFrogArtifactoryUser = localProperties['jFrogArtifactoryUser']
     def jFrogArtifactoryPassword = localProperties['jFrogArtifactoryPassword']
-    def appInfoLoggerRepoKey = localProperties['appInfoLoggerRepoKey']
 
-    contextUrl = jFrogArtifactoryUrl
+    contextUrl = 'https://quantuminventions.jfrog.io/artifactory/'
     publish {
         repository {
-            repoKey = appInfoLoggerRepoKey
+            repoKey = 'android-libs-release-local'
             username = jFrogArtifactoryUser
             password = jFrogArtifactoryPassword
         }
